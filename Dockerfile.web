@@ -21,6 +21,7 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY apps/web ./apps/web
 COPY packages ./packages
 
+RUN pnpm --filter @nyvora/database db:generate
 RUN pnpm --filter @nyvora/web build
 
 ENV NODE_ENV=production
