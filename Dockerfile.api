@@ -23,7 +23,6 @@ COPY packages ./packages
 
 RUN pnpm --filter @nyvora/database db:generate
 RUN pnpm --filter @nyvora/database build
-RUN cp -r packages/database/src/generated packages/database/dist/generated
 RUN pnpm --filter @nyvora/api build
 
 ENV NODE_ENV=production
