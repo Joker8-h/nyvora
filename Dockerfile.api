@@ -8,7 +8,6 @@ WORKDIR /app
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    NODE_ENV=production \
     PORT=3001
 
 COPY .npmrc package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -27,5 +26,6 @@ RUN pnpm --filter @nyvora/database build
 RUN cp -r packages/database/src/generated packages/database/dist/generated
 RUN pnpm --filter @nyvora/api build
 
+ENV NODE_ENV=production
 EXPOSE 3001
 CMD ["node", "apps/api/dist/main.js"]

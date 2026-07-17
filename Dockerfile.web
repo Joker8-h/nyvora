@@ -6,8 +6,7 @@ FROM node:20-slim
 RUN npm install -g pnpm@9.15.4
 WORKDIR /app
 
-ENV NODE_ENV=production \
-    PORT=3000 \
+ENV PORT=3000 \
     HOSTNAME=0.0.0.0
 
 COPY .npmrc package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -22,10 +21,8 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY apps/web ./apps/web
 COPY packages ./packages
 
-RUN pnpm --filter @nyvora/types build
-RUN pnpm --filter @nyvora/shared build
-RUN pnpm --filter @nyvora/ui build
 RUN pnpm --filter @nyvora/web build
 
+ENV NODE_ENV=production
 EXPOSE 3000
 CMD ["pnpm", "--filter", "@nyvora/web", "start"]
