@@ -1,0 +1,40 @@
+# ============================================
+# NYVORA API - NestJS Dockerfile (Single Stage)
+# ============================================
+
+FROM node:20-slim
+RUN npm install -g pnpm@9.15.4
+RUN apt-get update -y && apt-get install -y \
+    openssl curl \
+    chromium \
+    fonts-liberation fonts-noto-color-emoji \
+    libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 \
+    libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2 \
+    libpango-1.0-0 libcairo2 libatspi2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+
+ENV PUPPETEER_SKIP_DOWNLOAD=true \
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+    WHATSAPP_SESSION_PATH=/app/.wwebjs_auth
+
+COPY .npmrc package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/types/package.json ./packages/types/
+COPY packages/database/package.json ./packages/database/
+
+RUN pnpm install --frozen-lockfile
+
+COPY apps/api ./apps/api
+COPY packages ./packages
+
+RUN pnpm --filter @nyvora/database db:generate
+RUN pnpm --filter @nyvora/database build
+RUN cp -r packages/database/src/generated packages/database/dist/generated
+RUN pnpm --filter @nyvora/api build
+
+EXPOSE 3001
+ENV NODE_ENV=production PORT=3001
+CMD ["node", "apps/api/dist/main.js"]

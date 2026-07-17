@@ -1,0 +1,15 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "../src",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.ts$": "ts-jest"
+  },
+  "testEnvironment": "node",
+  "testTimeout": 30000,
+  "moduleNameMapper": {
+    "^@nyvora/database(.*)$": "<rootDir>/../../../packages/database/src$1",
+    "^@nyvora/types(.*)$": "<rootDir>/../../../packages/types/src$1",
+    "^@nyvora/shared(.*)$": "<rootDir>/../../../packages/shared/src$1"
+  }
+}

@@ -1,0 +1,20 @@
+FROM node:20-alpine AS builder
+RUN npm install -g pnpm@9.15.4
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+COPY .npmrc package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/types/package.json ./packages/types/
+COPY packages/database/package.json ./packages/database/
+
+RUN pnpm install --frozen-lockfile
+
+COPY apps/api ./apps/api
+COPY packages ./packages
+
+RUN echo "=== AFTER COPY: nest.js ===" && find /app -name "nest.js" -path "*/bin/*" 2>&1
+RUN echo "=== apps/api/node_modules/@nestjs/cli ===" && ls -la /app/apps/api/node_modules/@nestjs/cli/bin/ 2>&1 || echo "MISSING!"
+RUN echo "=== node_modules/.bin/nest ===" && ls -la /app/node_modules/.bin/nest 2>&1 || echo "MISSING!"
+RUN echo "=== nest build check ===" && cd /app/apps/api && npx nest --version 2>&1 || echo "nest CLI BROKEN"

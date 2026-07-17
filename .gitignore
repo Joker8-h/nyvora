@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.pnpm-debug.log
+
+# Build outputs
+dist/
+build/
+.next/
+.turbo/
+out/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Environment files
+.env
+.env.*
+!.env.example
+packages/database/.env
+packages/**/.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Prisma
+packages/database/src/generated/
+
+# VitePress
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
+# Misc
+*.tsbuildinfo
+*.pnp
+.pnp.js
