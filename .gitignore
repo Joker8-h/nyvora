@@ -39,7 +39,8 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Prisma
-packages/database/src/generated/
+# NOTE: packages/database/src/generated/ is committed (generated client + engines)
+# so Docker builds use valid types and the Linux runtime engine.
 
 # VitePress
 docs/.vitepress/dist/
