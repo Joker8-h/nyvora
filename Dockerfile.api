@@ -23,7 +23,7 @@ COPY packages ./packages
 
 RUN pnpm --filter @nyvora/database db:generate
 RUN pnpm --filter @nyvora/database build
-RUN pnpm --filter @nyvora/api build
+RUN cd apps/api && npx nest build 2>&1
 
 ENV NODE_ENV=production
 EXPOSE 3001
