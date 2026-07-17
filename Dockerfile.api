@@ -23,7 +23,7 @@ RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /v
 COPY apps/api ./apps/api
 COPY packages ./packages
 
-RUN pnpm --filter @nyvora/database db:generate
+RUN rm -rf packages/database/src/generated && pnpm --filter @nyvora/database db:generate
 RUN cd packages/database && npx tsc 2>&1
 RUN cd apps/api && npx nest build 2>&1
 
