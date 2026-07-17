@@ -16,7 +16,7 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/types/package.json ./packages/types/
 COPY packages/database/package.json ./packages/database/
 
-RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm install --frozen-lockfile
 
 COPY apps/api ./apps/api
 COPY packages ./packages
