@@ -18,6 +18,8 @@ COPY packages/database/package.json ./packages/database/
 
 RUN pnpm install --frozen-lockfile
 
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
 COPY apps/api ./apps/api
 COPY packages ./packages
 
