@@ -27,6 +27,8 @@ COPY packages ./packages
 # Generated Prisma client is committed to the repo (with linux engine binary),
 # so no prisma generate step is needed at build time.
 RUN cd packages/database && npx tsc 2>&1
+# Runtime code (dist/) requires './generated/client' relative to dist, so copy it there.
+RUN cp -r packages/database/src/generated packages/database/dist/generated
 RUN cd apps/api && npx nest build 2>&1
 
 ENV NODE_ENV=production
