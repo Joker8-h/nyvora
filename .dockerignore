@@ -2,6 +2,7 @@
 **/.next
 .git
 dist
+**/dist
 *.md
 .env*
 !.env.example

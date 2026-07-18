@@ -9,8 +9,8 @@
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "src",
     "baseUrl": "./",
-    "incremental": true,
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": false,
@@ -18,12 +18,11 @@
     "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@nyvora/shared/*": ["../../packages/shared/src/*"],
-      "@nyvora/database": ["../../packages/database/src/index.ts"],
-      "@nyvora/database/*": ["../../packages/database/src/*"],
-      "@nyvora/types/*": ["../../packages/types/src/*"]
+      "@nyvora/shared/*": ["../../packages/shared/dist/*"],
+      "@nyvora/database/*": ["../../packages/database/dist/*"],
+      "@nyvora/types/*": ["../../packages/types/dist/*"]
     }
   },
-  "include": ["src/**/*", "test/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.e2e-spec.ts"]
 }
