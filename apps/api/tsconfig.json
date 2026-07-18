@@ -19,6 +19,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@nyvora/shared/*": ["../../packages/shared/src/*"],
+      "@nyvora/database": ["../../packages/database/src/index.ts"],
       "@nyvora/database/*": ["../../packages/database/src/*"],
       "@nyvora/types/*": ["../../packages/types/src/*"]
     }
