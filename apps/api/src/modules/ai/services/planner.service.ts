@@ -53,8 +53,13 @@ Contexto del usuario:
           temperature: 0.3,
           max_tokens: 1000,
         }),
-        signal: AbortSignal.timeout(20000),
+        signal: AbortSignal.timeout(25000),
       });
+
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        throw new Error(`OpenAI HTTP ${response.status}: ${errText.slice(0, 200)}`);
+      }
 
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content || '';

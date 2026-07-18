@@ -38,9 +38,14 @@ export function NovaProvider({ children }: { children: React.ReactNode }) {
       setIsStreaming(true);
 
       try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
         const response = await fetch('/api/v1/ai/nova/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             message: content,
             conversationId,
@@ -150,8 +155,13 @@ export function NovaProvider({ children }: { children: React.ReactNode }) {
   const loadConversation = React.useCallback(async (id: string) => {
     setIsLoading(true);
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      const loadHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        loadHeaders['Authorization'] = `Bearer ${token}`;
+      }
       const response = await fetch(`/api/v1/ai/nova/conversations/${id}`, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: loadHeaders,
       });
       if (!response.ok) throw new Error('Error al cargar conversación');
       const data = await response.json();
