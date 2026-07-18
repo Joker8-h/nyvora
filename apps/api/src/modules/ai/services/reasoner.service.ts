@@ -37,21 +37,27 @@ Tools disponibles con sus parametros:
 - createCustomer: { firstName, lastName, email, phone, position }
 - findCustomer: { query }
 - updateCustomer: { contactId, firstName, lastName, email, phone }
-- createInvoice: { contactId, items: [{description, quantity, unitPrice}], dueDate }
-- createQuote: { contactId, items: [{description, quantity, unitPrice}], validUntil, notes }
+- createInvoice: { contactId, items: [{description, quantity, unitPrice}], dueDate (ISO string) }
+- createQuote: { contactId, items: [{description, quantity, unitPrice}], validUntil (ISO string), notes }
 - findProduct: { query }
 - updateProduct: { productId, name, sku, unitPrice, description }
-- createEmployee: { firstName, lastName, email, departmentId, hireDate }
+- createEmployee: { firstName, lastName, email, departmentId, hireDate (ISO string) }
 - findEmployee: { query, departmentId }
-- getSalesReport: { period }
-- getInventoryReport: { lowStock }
-- scheduleMeeting: { title, date, notes }
-- createTask: { projectId, title, description, assigneeId, priority, dueDate }
-- listProjects: { status, query }
-- listTasks: { projectId, status, query }
+- getSalesReport: { period (week|month|quarter|year) }
+- getInventoryReport: { lowStock (boolean) }
+- scheduleMeeting: { title, date (ISO datetime string, ex: "2026-07-24T15:00:00"), notes }
+- createTask: { projectId, title, description, assigneeId, priority (low|medium|high|urgent), dueDate (ISO string) }
+- listProjects: { status (planning|active|on_hold|completed|cancelled), query }
+- listTasks: { projectId, status (todo|in_progress|done|blocked), query }
+
+REGLAS IMPORTANTES:
+- Las fechas DEBEN ser strings ISO 8601 (ej: "2026-07-24T15:00:00"). NUNCA uses fechas relativas como "viernes" o "próximo lunes".
+- Si el usuario dice "el viernes a las 3pm", calcula la fecha ISO exacta basándote en la fecha actual.
+- Los items de facturas/cotizaciones deben tener unitPrice en centavos multiplicados por 100 (ej: $25.50 = 2550).
 
 Plan a evaluar: ${JSON.stringify(plan)}
-Contexto: Organization ID: ${context?.organizationId || 'unknown'}`;
+Contexto: Organization ID: ${context?.organizationId || 'unknown'}
+Fecha y hora actual: ${new Date().toISOString()}`;
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
