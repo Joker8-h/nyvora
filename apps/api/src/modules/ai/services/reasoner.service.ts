@@ -53,7 +53,11 @@ Tools disponibles con sus parametros:
 REGLAS IMPORTANTES:
 - Las fechas DEBEN ser strings ISO 8601 (ej: "2026-07-24T15:00:00"). NUNCA uses fechas relativas como "viernes" o "próximo lunes".
 - Si el usuario dice "el viernes a las 3pm", calcula la fecha ISO exacta basándote en la fecha actual.
-- Los items de facturas/cotizaciones deben tener unitPrice en centavos multiplicados por 100 (ej: $25.50 = 2550).
+- Los items de facturas/cotizaciones: unitPrice en DOLARES (ej: 25.50 para $25.50). El sistema convierte internamente a centavos. NUNCA uses strings como "to_be_determined".
+- Si un tool requiere un ID que no conoces (contactId, productId, projectId), NO inventes valores. Usa solo tools de busqueda (find*) primero, o deja el campo vacío/null si no es estrictamente requerido.
+- Si el usuario pide crear algo que requiere datos que aun no tienes, solo genera el tool de busqueda primero. NO generes tools dependientes con valores placeholder.
+- Los precios deben ser NUMERICOS, nunca strings.
+- NO uses "to_be_determined", "TBD", "pending" como valores. Usa datos reales o omite el tool.
 
 Plan a evaluar: ${JSON.stringify(plan)}
 Contexto: Organization ID: ${context?.organizationId || 'unknown'}
