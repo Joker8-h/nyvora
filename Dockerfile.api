@@ -36,4 +36,4 @@ RUN cd apps/api && npx nest build 2>&1
 
 ENV NODE_ENV=production
 EXPOSE 3001
-CMD ["sh", "-c", "cd /app/packages/database && npx prisma db push --accept-data-loss --skip-generate 2>&1 && node /app/apps/api/dist/main.js"]
+CMD ["node", "apps/api/dist/main.js"]

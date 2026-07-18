@@ -1,10 +1,14 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from './generated/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+import { execSync } from 'child_process';
+import * as path from 'path';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(PrismaService.name);
+
   constructor() {
     const pool = new Pool({ connectionString: process.env.DATABASE_URL });
     const adapter = new PrismaPg(pool);
@@ -15,6 +19,18 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   async onModuleInit() {
+    this.logger.log('Pushing database schema...');
+    const dbRoot = path.join(__dirname, '..');
+    const schemaPath = path.join(dbRoot, 'prisma', 'schema.prisma');
+    try {
+      execSync(
+        `npx prisma db push --accept-data-loss --skip-generate --schema="${schemaPath}"`,
+        { stdio: 'inherit', timeout: 60000, cwd: dbRoot },
+      );
+      this.logger.log('Database schema pushed successfully');
+    } catch (error) {
+      this.logger.error('Failed to push database schema', error);
+    }
     await this.$connect();
   }
 
