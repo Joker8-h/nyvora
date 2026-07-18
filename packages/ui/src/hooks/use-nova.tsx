@@ -129,8 +129,6 @@ export function NovaProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch (error) {
-        console.error('Nova chat error:', error);
-
         const errorMessage: NovaMessage = {
           id: `msg_${Date.now() + 1}`,
           type: 'assistant',
@@ -176,7 +174,7 @@ export function NovaProvider({ children }: { children: React.ReactNode }) {
       setMessages(loaded);
       setConversationId(id);
     } catch (error) {
-      console.error('Nova load conversation error:', error);
+      // silent fail for conversation loading
     } finally {
       setIsLoading(false);
     }

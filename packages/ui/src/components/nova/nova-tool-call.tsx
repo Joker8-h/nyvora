@@ -109,13 +109,6 @@ export function NovaToolCall({ toolCall }: NovaToolCallProps) {
               <p className="text-xs bg-muted rounded-md p-2">{summarizeResult(toolCall.result)}</p>
             </div>
           )}
-
-          {toolCall.error && (
-            <div>
-              <p className="text-xs font-medium text-destructive mb-1">Error:</p>
-              <p className="text-xs text-destructive">{toolCall.error}</p>
-            </div>
-          )}
         </div>
       )}
     </div>
