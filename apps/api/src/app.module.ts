@@ -27,6 +27,7 @@ import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
+import { SeedModule } from './modules/seed/seed.module';
 
 function redisConnection() {
   const url = process.env.REDIS_URL || 'redis://redis:6379';
@@ -87,6 +88,7 @@ function redisConnection() {
     IntegrationsModule,
     InvitationsModule,
     CampaignsModule,
+    SeedModule,
   ],
   providers: [
     {
