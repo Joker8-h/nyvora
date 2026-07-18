@@ -23,7 +23,8 @@ RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /v
 COPY apps/api ./apps/api
 COPY packages ./packages
 
-RUN pnpm --filter @nyvora/database db:generate
+# Generated Prisma client is committed to the repo (with linux engine binary),
+# so no prisma generate step is needed at build time.
 RUN cd packages/database && npx tsc 2>&1
 RUN cd apps/api && npx nest build 2>&1
 

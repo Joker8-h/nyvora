@@ -39,7 +39,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Prisma
-packages/database/src/generated/
+# packages/database/src/generated/  (committed: required for containerized build)
 
 # VitePress
 docs/.vitepress/dist/

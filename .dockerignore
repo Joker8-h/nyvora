@@ -2,7 +2,6 @@
 **/.next
 .git
 dist
-**/src/generated
 *.md
 .env*
 !.env.example
