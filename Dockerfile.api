@@ -36,6 +36,4 @@ RUN cd apps/api && npx nest build 2>&1
 
 ENV NODE_ENV=production
 EXPOSE 3001
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-CMD ["/app/entrypoint.sh"]
+CMD ["sh", "-c", "cd /app/packages/database && npx prisma db push --accept-data-loss --skip-generate 2>&1 && node /app/apps/api/dist/main.js"]
