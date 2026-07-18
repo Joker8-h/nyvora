@@ -27,6 +27,7 @@ import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
+import { CalendarModule } from './modules/calendar/calendar.module';
 import { SeedModule } from './modules/seed/seed.module';
 
 function redisConnection() {
@@ -88,6 +89,7 @@ function redisConnection() {
     IntegrationsModule,
     InvitationsModule,
     CampaignsModule,
+    CalendarModule,
     SeedModule,
   ],
   providers: [
