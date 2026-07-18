@@ -16,6 +16,7 @@ export const ALL_PERMISSIONS = [
   'finance:categories:read', 'finance:categories:create', 'finance:categories:update', 'finance:categories:delete',
   'finance:transactions:read', 'finance:transactions:create', 'finance:transactions:update', 'finance:transactions:delete',
   'reports:finance:read',
+  'reports:sales:read',
   'hr:positions:read', 'hr:positions:create', 'hr:positions:update', 'hr:positions:delete',
   'hr:employees:read', 'hr:employees:create', 'hr:employees:update', 'hr:employees:delete',
   'hr:absences:read', 'hr:absences:create', 'hr:absences:update', 'hr:absences:delete',
