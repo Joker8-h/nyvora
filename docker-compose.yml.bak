@@ -1,0 +1,115 @@
+# ============================================
+# NYVORA DOCKER COMPOSE
+# ============================================
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: nyvora-postgres
+    restart: unless-stopped
+    ports:
+      - '5434:5432'
+    environment:
+      POSTGRES_USER: nyvora
+      POSTGRES_PASSWORD: nyvoradev
+      POSTGRES_DB: nyvora
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nyvora']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache (for future use)
+  redis:
+    image: redis:7-alpine
+    container_name: nyvora-redis
+    restart: unless-stopped
+    ports:
+      - '6380:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Next.js Web App
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: nyvora-web
+    restart: unless-stopped
+    ports:
+      - '3006:3000'
+    environment:
+      - NODE_ENV=production
+      - API_URL=http://api:3001
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # NestJS API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: nyvora-api
+    restart: unless-stopped
+    ports:
+      - '3005:3001'
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://nyvora:nyvoradev@postgres:5432/nyvora
+      - JWT_ACCESS_SECRET=dev-access-secret-key-change-in-production
+      - JWT_REFRESH_SECRET=dev-refresh-secret-key-change-in-production
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - APP_URL=http://localhost:3006
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - EMAIL_FROM=${EMAIL_FROM}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_CHANNEL=${SLACK_CHANNEL}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_FROM=${TWILIO_FROM}
+      - REDIS_URL=redis://redis:6379
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-nyvora-dev-encryption-key-change-me}
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+      - WHATSAPP_SESSION_PATH=/app/.wwebjs_auth
+    volumes:
+      - whatsapp_sessions:/app/.wwebjs_auth
+      - ./.env:/app/.env:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:3001/api/v1/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # VitePress Docs (commented out - esbuild Alpine issue)
+  # docs:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.docs
+  #   container_name: nyvora-docs
+  #   restart: unless-stopped
+  #   ports:
+  #     - '3002:80'
+  #   environment:
+  #     - NODE_ENV=development
+
+volumes:
+  postgres_data:
+  redis_data:
+  whatsapp_sessions:

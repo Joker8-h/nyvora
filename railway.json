@@ -1,0 +1,50 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "services": {
+    "api": {
+      "build": {
+        "dockerfile": "Dockerfile.api",
+        "context": "."
+      },
+      "environment": {
+        "NODE_ENV": "production",
+        "PORT": "3001",
+        "DATABASE_URL": "${{Postgres.DATABASE_URL}}",
+        "JWT_ACCESS_SECRET": "${{JWT_ACCESS_SECRET}}",
+        "JWT_REFRESH_SECRET": "${{JWT_REFRESH_SECRET}}",
+        "ENCRYPTION_KEY": "${{ENCRYPTION_KEY}}",
+        "OPENAI_API_KEY": "${{OPENAI_API_KEY}}",
+        "APP_URL": "${{APP_URL}}",
+        "RESEND_API_KEY": "${{RESEND_API_KEY}}",
+        "EMAIL_FROM": "${{EMAIL_FROM}}",
+        "SLACK_WEBHOOK_URL": "${{SLACK_WEBHOOK_URL}}",
+        "SLACK_BOT_TOKEN": "${{SLACK_BOT_TOKEN}}",
+        "SLACK_CHANNEL": "${{SLACK_CHANNEL}}",
+        "TWILIO_ACCOUNT_SID": "${{TWILIO_ACCOUNT_SID}}",
+        "TWILIO_AUTH_TOKEN": "${{TWILIO_AUTH_TOKEN}}",
+        "TWILIO_FROM": "${{TWILIO_FROM}}",
+        "PUPPETEER_EXECUTABLE_PATH": "/usr/bin/chromium",
+        "WHATSAPP_SESSION_PATH": "/app/.wwebjs_auth"
+      },
+      "restartPolicy": {
+        "policy": "on_failure",
+        "maxRetries": 10
+      }
+    },
+    "web": {
+      "build": {
+        "dockerfile": "Dockerfile.web",
+        "context": "."
+      },
+      "environment": {
+        "NODE_ENV": "production",
+        "API_URL": "${{API_URL}}",
+        "NEXT_PUBLIC_API_URL": "${{API_URL}}"
+      },
+      "restartPolicy": {
+        "policy": "on_failure",
+        "maxRetries": 10
+      }
+    }
+  }
+}

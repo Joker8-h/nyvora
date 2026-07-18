@@ -4,10 +4,10 @@ datasource db {
 }
 
 generator client {
-  provider      = "prisma-client-js"
-  output        = "../src/generated/client"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
-  seed          = "node ../prisma/seed.ts"
+  provider        = "prisma-client-js"
+  output          = "../src/generated/client"
+  previewFeatures = ["driverAdapters"]
+  seed            = "node ../prisma/seed.ts"
 }
 
 // ============================================
