@@ -8,6 +8,7 @@ WORKDIR /app
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PRISMA_SKIP_POSTINSTALL_GENERATE=true \
     PORT=3001
 
 COPY .npmrc package.json pnpm-lock.yaml pnpm-workspace.yaml ./
