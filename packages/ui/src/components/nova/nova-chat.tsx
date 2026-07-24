@@ -10,8 +10,13 @@ import { NovaInput } from './nova-input';
 import { NovaSuggestions } from './nova-suggestions';
 import { NovaThinking } from './nova-thinking';
 import { useNova } from '../../hooks/use-nova';
-import { useNovaConversations, useDeleteNovaConversation, type NovaConversationSummary } from '@/lib/hooks';
 import { Plus, Trash2, MessageSquare } from 'lucide-react';
+
+export interface NovaConversationSummary {
+  conversationId: string;
+  lastMessage: string;
+  updatedAt: string | Date;
+}
 
 interface NovaChatProps {
   className?: string;
@@ -24,12 +29,38 @@ const defaultSuggestions = [
   'Crear una campaña de marketing',
 ];
 
+const API_URL = typeof window !== 'undefined'
+  ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
+  : 'http://localhost:3001/api/v1';
+
 export function NovaChat({ className }: NovaChatProps) {
   const { messages, isLoading, isStreaming, sendMessage, conversationId, loadConversation, clearMessages } = useNova();
-  const conversationsQuery = useNovaConversations();
-  const deleteConversation = useDeleteNovaConversation();
+  const [conversations, setConversations] = React.useState<NovaConversationSummary[]>([]);
+  const [loadingConversations, setLoadingConversations] = React.useState(false);
   const [showSidebar, setShowSidebar] = React.useState(true);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const fetchConversations = React.useCallback(async () => {
+    setLoadingConversations(true);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      const res = await fetch(`${API_URL}/ai/nova/conversations`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setConversations(data.data || data || []);
+      }
+    } catch {
+      // silent
+    } finally {
+      setLoadingConversations(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations, conversationId]);
 
   React.useEffect(() => {
     if (scrollRef.current) {
@@ -51,8 +82,17 @@ export function NovaChat({ className }: NovaChatProps) {
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    await deleteConversation.mutateAsync(id);
-    if (conversationId === id) clearMessages();
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      await fetch(`${API_URL}/ai/nova/conversations/${id}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      setConversations((prev) => prev.filter((c) => c.conversationId !== id));
+      if (conversationId === id) clearMessages();
+    } catch {
+      // silent
+    }
   };
 
   return (
@@ -68,10 +108,10 @@ export function NovaChat({ className }: NovaChatProps) {
           </div>
           <ScrollArea className="flex-1 p-2">
             <div className="space-y-1">
-              {conversationsQuery.isLoading ? (
+              {loadingConversations ? (
                 <p className="text-sm text-muted-foreground p-2">Cargando...</p>
-              ) : (conversationsQuery.data as NovaConversationSummary[] | undefined)?.length ? (
-                (conversationsQuery.data as NovaConversationSummary[]).map((c) => (
+              ) : conversations.length ? (
+                conversations.map((c) => (
                   <button
                     key={c.conversationId}
                     onClick={() => handleSelect(c.conversationId)}

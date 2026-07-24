@@ -54,8 +54,8 @@ async function bootstrap() {
 
   // Swagger
   const config = new DocumentBuilder()
-    .setTitle('Nexora API')
-    .setDescription('Nexora Business Operating System API')
+    .setTitle('Nyvora API')
+    .setDescription('Nyvora Business Operating System API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -67,7 +67,7 @@ async function bootstrap() {
   const port = process.env.PORT || 3001;
   await app.listen(port);
 
-  console.log(`Nexora API running on: http://localhost:${port}`);
+  console.log(`Nyvora API running on: http://localhost:${port}`);
   console.log(`Swagger docs: http://localhost:${port}/docs`);
 }
 

@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
   transpilePackages: ['@nyvora/ui', '@nyvora/shared', '@nyvora/types'],
   reactStrictMode: true,
   experimental: {

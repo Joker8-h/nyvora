@@ -9,6 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://nyvora.com'),
   title: 'Nyvora - Business Operating System AI-First',
   description:
     'La plataforma que convierte tu empresa en una organización inteligente. Automatiza, analiza y crece con el poder de la IA.',

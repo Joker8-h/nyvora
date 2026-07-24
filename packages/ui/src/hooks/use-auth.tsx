@@ -22,6 +22,10 @@ interface AuthContextType {
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
+const API_URL = typeof window !== 'undefined'
+  ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
+  : 'http://localhost:3001/api/v1';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -37,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const response = await fetch('/api/auth/me', {
+      const response = await fetch(`${API_URL}/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` },
         credentials: 'same-origin',
       });
@@ -56,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function login(email: string, password: string) {
-    const response = await fetch('/api/auth/login', {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -85,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     lastName: string;
     companyName?: string;
   }) {
-    const response = await fetch('/api/auth/register', {
+    const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -108,7 +112,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    await fetch(`${API_URL}/auth/logout`, {
+      method: 'POST',
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      credentials: 'same-origin',
+    }).catch(() => {});
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     setUser(null);
