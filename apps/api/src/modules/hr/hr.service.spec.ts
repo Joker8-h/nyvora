@@ -11,15 +11,18 @@ describe('HrService', () => {
 
   beforeEach(async () => {
     prisma = {
+      $transaction: jest.fn((promises) => Promise.all(promises)),
       employee: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'emp-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
       },
       position: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'pos-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
         delete: jest.fn().mockImplementation(({ where }) => Promise.resolve({ id: where.id })),
@@ -27,6 +30,7 @@ describe('HrService', () => {
       absence: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'abs-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
         delete: jest.fn().mockImplementation(({ where }) => Promise.resolve({ id: where.id })),
@@ -34,6 +38,7 @@ describe('HrService', () => {
       evaluation: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'eval-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
         delete: jest.fn().mockImplementation(({ where }) => Promise.resolve({ id: where.id })),
@@ -54,7 +59,7 @@ describe('HrService', () => {
   describe('Employees', () => {
     it('should find employees', async () => {
       const result = await service.findEmployees(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0, page: 1, limit: 20 });
     });
 
     it('should find employee by id', async () => {
@@ -91,7 +96,7 @@ describe('HrService', () => {
   describe('Positions', () => {
     it('should find positions', async () => {
       const result = await service.findPositions(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0 });
     });
 
     it('should find position by id', async () => {
@@ -120,7 +125,7 @@ describe('HrService', () => {
   describe('Absences', () => {
     it('should find absences', async () => {
       const result = await service.findAbsences(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0, page: 1, limit: 20 });
     });
 
     it('should find absence by id', async () => {
@@ -154,7 +159,7 @@ describe('HrService', () => {
   describe('Evaluations', () => {
     it('should find evaluations', async () => {
       const result = await service.findEvaluations(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0, page: 1, limit: 20 });
     });
 
     it('should find evaluation by id', async () => {

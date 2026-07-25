@@ -11,27 +11,33 @@ describe('CrmService', () => {
 
   beforeEach(async () => {
     prisma = {
+      $transaction: jest.fn((promises) => Promise.all(promises)),
       crmContact: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(1),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'c-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
       },
       crmCompany: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(1),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'comp-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
       },
       crmLead: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(1),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'lead-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
       },
       crmPipeline: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        findFirst: jest.fn().mockResolvedValue({ id: 'p-1', name: 'Default Pipeline' }),
+        count: jest.fn().mockResolvedValue(1),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'pipe-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
         delete: jest.fn().mockImplementation(({ where }) => Promise.resolve({ id: where.id })),
@@ -53,7 +59,7 @@ describe('CrmService', () => {
     it('should find contacts by org', async () => {
       prisma.crmContact.findMany.mockResolvedValue([{ id: 'c-1', firstName: 'John' }]);
       const result = await service.findContacts(mockOrgId);
-      expect(result).toHaveLength(1);
+      expect(result.data).toHaveLength(1);
       expect(prisma.crmContact.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: expect.objectContaining({ organizationId: mockOrgId }) }),
       );
@@ -97,7 +103,7 @@ describe('CrmService', () => {
     it('should find companies by org', async () => {
       prisma.crmCompany.findMany.mockResolvedValue([{ id: 'comp-1', name: 'Acme' }]);
       const result = await service.findCompanies(mockOrgId);
-      expect(result).toHaveLength(1);
+      expect(result.data).toHaveLength(1);
     });
 
     it('should find company by id', async () => {
@@ -130,7 +136,7 @@ describe('CrmService', () => {
     it('should find leads by org', async () => {
       prisma.crmLead.findMany.mockResolvedValue([{ id: 'lead-1' }]);
       const result = await service.findLeads(mockOrgId);
-      expect(result).toHaveLength(1);
+      expect(result.data).toHaveLength(1);
     });
 
     it('should find lead by id', async () => {
@@ -164,7 +170,7 @@ describe('CrmService', () => {
     it('should find pipelines by org', async () => {
       prisma.crmPipeline.findMany.mockResolvedValue([{ id: 'pipe-1', name: 'Sales' }]);
       const result = await service.findPipelines(mockOrgId);
-      expect(result).toHaveLength(1);
+      expect(result.data).toHaveLength(1);
     });
 
     it('should find pipeline by id', async () => {

@@ -11,27 +11,31 @@ describe('SalesService', () => {
 
   beforeEach(async () => {
     prisma = {
+      $transaction: jest.fn((promises) => Promise.all(promises)),
       salesQuotation: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'q-1', ...data, items: data.items?.create || [] })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
       },
       salesOrder: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'o-1', ...data, items: data.items?.create || [] })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
       },
       salesInvoice: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'inv-1', ...data, items: data.items?.create || [] })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
-        count: jest.fn().mockResolvedValue(0),
       },
       salesPayment: {
         findMany: jest.fn().mockResolvedValue([]),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'pay-1', ...data })),
       },
     };
@@ -50,7 +54,7 @@ describe('SalesService', () => {
   describe('Quotations', () => {
     it('should find quotations', async () => {
       const result = await service.findQuotations(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0, page: 1, limit: 10 });
     });
 
     it('should find quotation by id', async () => {
@@ -64,7 +68,7 @@ describe('SalesService', () => {
     });
 
     it('should create quotation with calculated totals', async () => {
-      prisma.salesInvoice.count.mockResolvedValue(0);
+      prisma.salesQuotation.count.mockResolvedValue(0);
       const data = {
         organizationId: mockOrgId,
         items: [
@@ -90,7 +94,7 @@ describe('SalesService', () => {
   describe('Orders', () => {
     it('should find orders', async () => {
       const result = await service.findOrders(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0, page: 1, limit: 10 });
     });
 
     it('should find order by id', async () => {
@@ -104,7 +108,7 @@ describe('SalesService', () => {
     });
 
     it('should create order', async () => {
-      prisma.salesInvoice.count.mockResolvedValue(0);
+      prisma.salesOrder.count.mockResolvedValue(0);
       const data = {
         organizationId: mockOrgId,
         items: [{ description: 'Widget', quantity: 3, unitPrice: BigInt(2000) }],
@@ -124,7 +128,7 @@ describe('SalesService', () => {
   describe('Invoices', () => {
     it('should find invoices', async () => {
       const result = await service.findInvoices(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0, page: 1, limit: 10 });
     });
 
     it('should find invoice by id', async () => {
@@ -159,7 +163,7 @@ describe('SalesService', () => {
   describe('Payments', () => {
     it('should find payments', async () => {
       const result = await service.findPayments(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0, page: 1, limit: 10 });
     });
 
     it('should create payment', async () => {

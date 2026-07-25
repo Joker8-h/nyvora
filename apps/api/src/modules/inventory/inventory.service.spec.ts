@@ -11,15 +11,19 @@ describe('InventoryService', () => {
 
   beforeEach(async () => {
     prisma = {
+      $transaction: jest.fn((cb) => (typeof cb === 'function' ? cb(prisma) : Promise.all(cb))),
       product: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        findFirst: jest.fn().mockResolvedValue({ id: 'prod-1', sku: 'WGT-001' }),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'prod-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
       },
       productCategory: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'cat-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
         delete: jest.fn().mockImplementation(({ where }) => Promise.resolve({ id: where.id })),
@@ -27,6 +31,8 @@ describe('InventoryService', () => {
       warehouse: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        findFirst: jest.fn().mockResolvedValue({ id: 'wh-1', name: 'Main Warehouse' }),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'wh-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
         delete: jest.fn().mockImplementation(({ where }) => Promise.resolve({ id: where.id })),
@@ -34,10 +40,13 @@ describe('InventoryService', () => {
       stockLevel: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'sl-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
       },
       stockMovement: {
+        findMany: jest.fn().mockResolvedValue([]),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'sm-1', ...data })),
       },
     };
@@ -56,7 +65,7 @@ describe('InventoryService', () => {
   describe('Products', () => {
     it('should find products', async () => {
       const result = await service.findProducts(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0, page: 1, limit: 10 });
     });
 
     it('should find product by id', async () => {
@@ -92,7 +101,7 @@ describe('InventoryService', () => {
   describe('Categories', () => {
     it('should find categories', async () => {
       const result = await service.findCategories(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0 });
     });
 
     it('should find category by id', async () => {
@@ -121,7 +130,7 @@ describe('InventoryService', () => {
   describe('Warehouses', () => {
     it('should find warehouses', async () => {
       const result = await service.findWarehouses(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0 });
     });
 
     it('should find warehouse by id', async () => {

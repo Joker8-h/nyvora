@@ -11,15 +11,18 @@ describe('FinanceService', () => {
 
   beforeEach(async () => {
     prisma = {
+      $transaction: jest.fn((cb) => (typeof cb === 'function' ? cb(prisma) : Promise.all(cb))),
       financeAccount: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'acc-1', ...data, balance: BigInt(0) })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
       },
       financeCategory: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'fc-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
         delete: jest.fn().mockImplementation(({ where }) => Promise.resolve({ id: where.id })),
@@ -27,6 +30,7 @@ describe('FinanceService', () => {
       financeTransaction: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
+        count: jest.fn().mockResolvedValue(0),
         create: jest.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'tx-1', ...data })),
         update: jest.fn().mockImplementation(({ where, data }) => Promise.resolve({ id: where.id, ...data })),
         delete: jest.fn().mockImplementation(({ where }) => Promise.resolve({ id: where.id })),
@@ -47,7 +51,7 @@ describe('FinanceService', () => {
   describe('Accounts', () => {
     it('should find accounts', async () => {
       const result = await service.findAccounts(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0 });
     });
 
     it('should find account by id', async () => {
@@ -78,7 +82,7 @@ describe('FinanceService', () => {
   describe('Categories', () => {
     it('should find categories', async () => {
       const result = await service.findCategories(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0 });
     });
 
     it('should find category by id', async () => {
@@ -107,7 +111,7 @@ describe('FinanceService', () => {
   describe('Transactions', () => {
     it('should find transactions', async () => {
       const result = await service.findTransactions(mockOrgId);
-      expect(result).toEqual([]);
+      expect(result).toEqual({ data: [], total: 0, page: 1, limit: 20 });
     });
 
     it('should find transaction by id', async () => {

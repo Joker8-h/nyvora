@@ -1,15 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { AutomationsService } from './automations.service';
+import { IntegrationsService } from '../integrations/integrations.service';
 import { PrismaService } from '@nyvora/database';
 
 describe('AutomationsService', () => {
   let service: AutomationsService;
   let prisma: Record<string, any>;
+  let integrations: Record<string, any>;
 
   const mockOrgId = 'org-123';
 
   beforeEach(async () => {
+    integrations = {
+      sendEmail: jest.fn().mockResolvedValue({ success: true }),
+      notifySlack: jest.fn().mockResolvedValue({ success: true }),
+      callWebhook: jest.fn().mockResolvedValue({ success: true }),
+    };
+
     prisma = {
       automation: {
         findMany: jest.fn().mockResolvedValue([]),
@@ -24,6 +32,7 @@ describe('AutomationsService', () => {
       providers: [
         AutomationsService,
         { provide: PrismaService, useValue: prisma },
+        { provide: IntegrationsService, useValue: integrations },
       ],
     }).compile();
 
