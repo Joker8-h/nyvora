@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-
 import type { AuthUser } from '@nyvora/types';
 
 interface AuthContextType {
@@ -22,9 +21,13 @@ interface AuthContextType {
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = typeof window !== 'undefined'
-  ? (process.env.NEXT_PUBLIC_API_URL || '/api/v1')
-  : (process.env.API_URL || 'http://localhost:3001/api/v1');
+function getApiUrl(): string {
+  if (typeof window !== 'undefined') {
+    // In browser, always use relative path so Next.js proxy route handles host/port transparently
+    return '/api/v1';
+  }
+  return process.env.API_URL || 'http://localhost:3001/api/v1';
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<AuthUser | null>(null);
@@ -37,12 +40,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function checkAuth() {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-      if (!token) {
-        return;
+
+      const apiUrl = getApiUrl();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${API_URL}/auth/me`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+      const response = await fetch(`${apiUrl}/auth/me`, {
+        headers,
         credentials: 'same-origin',
       });
       if (response.ok) {
@@ -51,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else if (response.status === 401) {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
+        setUser(null);
       }
     } catch (error) {
       console.error('Auth check failed:', error);
@@ -60,7 +67,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function login(email: string, password: string) {
-    const response = await fetch(`${API_URL}/auth/login`, {
+    const apiUrl = getApiUrl();
+    const response = await fetch(`${apiUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -68,8 +76,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al iniciar sesión');
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || error.error?.message || 'Error al iniciar sesión');
     }
 
     const data = await response.json();
@@ -89,7 +97,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     lastName: string;
     companyName?: string;
   }) {
-    const response = await fetch(`${API_URL}/auth/register`, {
+    const apiUrl = getApiUrl();
+    const response = await fetch(`${apiUrl}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -97,8 +106,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Error al registrar');
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || error.error?.message || 'Error al registrar');
     }
 
     const result = await response.json();
@@ -113,11 +122,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function logout() {
     const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-    await fetch(`${API_URL}/auth/logout`, {
+    const apiUrl = getApiUrl();
+    await fetch(`${apiUrl}/auth/logout`, {
       method: 'POST',
       headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       credentials: 'same-origin',
     }).catch(() => {});
+
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     setUser(null);
