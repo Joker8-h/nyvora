@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@nyvora/database';
 import type { NovaToolImplementation, NovaToolContext } from '@nyvora/types';
 import { CampaignsService } from '../../campaigns/campaigns.service';
+import { MarketplaceService } from '../../marketplace/marketplace.service';
 
 @Injectable()
 export class ToolRegistryService {
@@ -10,6 +11,7 @@ export class ToolRegistryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly campaignsService: CampaignsService,
+    private readonly marketplaceService: MarketplaceService,
   ) {
     this.registerDefaultTools();
   }
@@ -658,6 +660,78 @@ export class ToolRegistryService {
         };
       },
       requiredPermissions: ['campaigns:send'],
+    });
+
+    // Marketplace - listApps
+    this.register({
+      name: 'listApps',
+      description: 'Listar las aplicaciones e integraciones disponibles en el Marketplace de Nyvora y su estado de instalacion.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          installedOnly: { type: 'boolean', description: 'Mostrar solo las apps instaladas' },
+        },
+      },
+      execute: async (input, context) => {
+        if (input.installedOnly) {
+          return this.marketplaceService.findInstalledApps(context.organizationId!);
+        }
+        return this.marketplaceService.findCatalog(context.organizationId!);
+      },
+      requiredPermissions: ['marketplace:read'],
+    });
+
+    // Marketplace - installApp
+    this.register({
+      name: 'installApp',
+      description: 'Instalar una aplicacion o integracion del Marketplace (whatsapp, stripe, sendgrid, slack, trello, google-sheets, zapier, dropbox, twilio, jira, google-calendar, hubspot).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          appId: { type: 'string', description: 'ID de la app (ej: whatsapp, stripe, sendgrid, slack, trello, google-calendar)' },
+          config: { type: 'object', description: 'Parametros de configuracion (opcional)' },
+        },
+        required: ['appId'],
+      },
+      execute: async (input, context) => {
+        return this.marketplaceService.installApp(context.organizationId!, input.appId, input.config);
+      },
+      requiredPermissions: ['marketplace:write'],
+    });
+
+    // Marketplace - uninstallApp
+    this.register({
+      name: 'uninstallApp',
+      description: 'Desinstalar o desactivar una aplicacion o integracion del Marketplace.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          installationId: { type: 'string', description: 'ID de la instalacion de la app' },
+        },
+        required: ['installationId'],
+      },
+      execute: async (input, context) => {
+        return this.marketplaceService.uninstallApp(input.installationId);
+      },
+      requiredPermissions: ['marketplace:write'],
+    });
+
+    // Marketplace - configureApp
+    this.register({
+      name: 'configureApp',
+      description: 'Actualizar la configuracion o credenciales de una aplicacion instalada (API keys, webhooks, tokens).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          installationId: { type: 'string', description: 'ID de la instalacion' },
+          config: { type: 'object', description: 'Objeto con la configuracion' },
+        },
+        required: ['installationId', 'config'],
+      },
+      execute: async (input, context) => {
+        return this.marketplaceService.updateAppConfig(input.installationId, input.config);
+      },
+      requiredPermissions: ['marketplace:write'],
     });
   }
 }

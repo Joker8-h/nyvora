@@ -12,9 +12,10 @@ import { ToolRegistryService } from './services/tool-registry.service';
 import { OpenAIService } from './services/openai.service';
 import { AuthModule } from '../auth/auth.module';
 import { CampaignsModule } from '../campaigns/campaigns.module';
+import { MarketplaceModule } from '../marketplace/marketplace.module';
 
 @Module({
-  imports: [ConfigModule, AuthModule, CampaignsModule],
+  imports: [ConfigModule, AuthModule, CampaignsModule, MarketplaceModule],
   controllers: [AiController],
   providers: [
     NovaOrchestratorService,
