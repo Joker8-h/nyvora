@@ -23,8 +23,8 @@ interface AuthContextType {
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 const API_URL = typeof window !== 'undefined'
-  ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
-  : 'http://localhost:3001/api/v1';
+  ? (process.env.NEXT_PUBLIC_API_URL || '/api/v1')
+  : (process.env.API_URL || 'http://localhost:3001/api/v1');
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<AuthUser | null>(null);
