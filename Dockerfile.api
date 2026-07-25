@@ -8,7 +8,6 @@ WORKDIR /app
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PRISMA_SKIP_POSTINSTALL_GENERATE=true \
     PORT=3001
 
 COPY .npmrc package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -17,21 +16,18 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/types/package.json ./packages/types/
 COPY packages/database/package.json ./packages/database/
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY apps/api ./apps/api
 COPY packages ./packages
 
-# Generated Prisma client is committed to the repo (with linux engine binary),
-# so no prisma generate step is needed at build time.
 RUN rm -rf packages/*/dist apps/api/dist
+RUN pnpm --filter @nyvora/database db:generate
 RUN cd packages/types && npx tsc 2>&1
 RUN cd packages/shared && npx tsc 2>&1
 RUN cd packages/database && npx tsc 2>&1
-# Runtime code (dist/) requires './generated/client' relative to dist, so copy it there.
-RUN cp -r packages/database/src/generated packages/database/dist/generated
 RUN cd apps/api && npx nest build 2>&1
 
 ENV NODE_ENV=production
