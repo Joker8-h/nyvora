@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiBaseUrls } from '@/lib/api-server';
 
 async function fetchFromApi(path: string, init?: RequestInit): Promise<Response> {
-  const urls = ['http://api:3001', 'http://localhost:3001'];
+  let lastErr: any;
+  const urls = getApiBaseUrls();
   for (const base of urls) {
     try {
-      return await fetch(`${base}${path}`, { ...init, signal: AbortSignal.timeout(10000) });
-    } catch {}
+      const res = await fetch(`${base}${path}`, { ...init, signal: AbortSignal.timeout(15000) });
+      return res;
+    } catch (err: any) {
+      lastErr = err;
+    }
   }
-  throw new Error('All API URLs failed');
+  throw lastErr || new Error('All API URLs failed');
 }
 
 export async function POST(request: NextRequest) {

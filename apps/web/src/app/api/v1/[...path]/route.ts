@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URLS = ['http://api:3001', 'http://localhost:3001'];
+import { getApiBaseUrls } from '@/lib/api-server';
 
 function stripSecureFlag(cookie: string): string {
   return cookie.replace(/;\s*Secure/gi, '').replace(/;\s*secure/gi, '');
@@ -33,7 +32,9 @@ async function proxyRequest(
   }
 
   let lastError: any;
-  for (const baseUrl of API_URLS) {
+  const urls = getApiBaseUrls();
+
+  for (const baseUrl of urls) {
     try {
       const targetUrl = `${baseUrl}/api/v1/${targetPath}${search}`;
       const response = await fetch(targetUrl, { ...init, signal: AbortSignal.timeout(60000) });

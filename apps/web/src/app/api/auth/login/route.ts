@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URLS = ['http://api:3001', 'http://localhost:3001'];
+import { getApiBaseUrls } from '@/lib/api-server';
 
 async function fetchFromApi(path: string, init?: RequestInit): Promise<Response> {
   let lastErr: any;
-  for (const base of API_URLS) {
+  const urls = getApiBaseUrls();
+  for (const base of urls) {
     try {
-      const res = await fetch(`${base}${path}`, { ...init, signal: AbortSignal.timeout(10000) });
+      const res = await fetch(`${base}${path}`, { ...init, signal: AbortSignal.timeout(15000) });
       return res;
     } catch (err: any) {
       lastErr = err;
@@ -31,19 +31,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(data, { status: response.status });
     }
 
+    const isProd = process.env.NODE_ENV === 'production';
     const res = NextResponse.json(data);
 
     if (data.tokens) {
       res.cookies.set('accessToken', data.tokens.accessToken, {
         httpOnly: true,
-        secure: false,
+        secure: isProd,
         sameSite: 'lax',
         maxAge: 7200,
         path: '/',
       });
       res.cookies.set('refreshToken', data.tokens.refreshToken, {
         httpOnly: true,
-        secure: false,
+        secure: isProd,
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60,
         path: '/',
