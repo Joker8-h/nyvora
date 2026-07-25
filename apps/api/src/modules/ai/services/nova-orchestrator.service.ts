@@ -6,7 +6,6 @@ import { ExecutorService } from './executor.service';
 import { ContextBuilderService } from './context-builder.service';
 import { MemoryService } from './memory.service';
 import { OpenAIService } from './openai.service';
-import type { NovaMessage } from '@nyvora/types';
 
 @Injectable()
 export class NovaOrchestratorService {
@@ -120,49 +119,49 @@ export class NovaOrchestratorService {
     const successfulTools = toolResults.filter((t: any) => t.success);
     const failedTools = toolResults.filter((t: any) => !t.success);
 
-    if (successfulTools.length === 0 && failedTools.length === 0) {
-      return 'He procesado tu solicitud. ¿Hay algo más en lo que pueda ayudarte?';
-    }
-
     if (this.openai.isConfigured) {
       try {
-        const systemPrompt = `Eres Nova, el asistente conversacional de Nyvora (un Business Operating System AI-First).
-Tu objetivo es responder al usuario de forma NATURAL, cercana y en lenguaje cotidiano, como lo haría un asistente humano competente.
+        const systemPrompt = `Eres Nova, el asistente e Inteligencia Artificial conversacional de Nyvora (un Business Operating System AI-First).
+Tu objetivo es responder al usuario de forma CÁLIDA, NATURAL, cercana y muy útil en español, como el mejor co-piloto y gerente operativo de su empresa.
 
 REGLAS ESTRICTAS:
-- NUNCA muestres JSON, corchetes, llaves ni estructuras técnicas al usuario.
-- Escribe en español, de forma clara y breve (2-4 frases).
-- Si ejecutaste acciones, confirma qué se hizo y da detalles útiles y legibles (nombres, cantidades, fechas) en lugar de identificadores técnicos.
-- Si algo falló, explícalo con自然idad y sugiere cómo solucionarlo, sin mostrar errores crudos.
-- No repitas el JSON de los resultados. Resume con palabras.`;
+- Si el usuario te saluda ("hola", "buenas", "hola nova"), salúdalo con calidez y explícale brevemente cómo puedes ayudarle (crear cotizaciones, facturas, clientes en el CRM, revisar inventario, agendar citas o instalar aplicaciones en el Marketplace).
+- NUNCA muestres JSON, corchetes, llaves ni identificadores técnicos al usuario.
+- Escribe en español impecable, con tono profesional y cercano (2-4 frases).
+- Si ejecutaste acciones con herramientas, confirma claramente qué se logró con nombres y datos útiles.
+- Si alguna herramienta falló, explícalo amablemente y ofrece sugerencias.`;
 
-        const resultsSummary = toolResults
-          .map((t: any) => {
-            if (t.success) {
-              return `Acción exitosa (${t.toolName}): ${JSON.stringify(t.result)}`;
-            }
-            return `Acción fallida (${t.toolName}): ${t.error}`;
-          })
-          .join('\n');
+        let resultsSummary = 'No se requirieron acciones de base de datos.';
+        if (toolResults.length > 0) {
+          resultsSummary = toolResults
+            .map((t: any) => {
+              if (t.success) {
+                return `Acción exitosa (${t.toolName}): ${JSON.stringify(t.result)}`;
+              }
+              return `Acción fallida (${t.toolName}): ${t.error}`;
+            })
+            .join('\n');
+        }
 
         const userPrompt = `Mensaje del usuario: "${userMessage}"
 
-Resultados de las acciones ejecutadas por las herramientas (úsalo solo como base, NO lo repitas tal cual):
+Resultados de las acciones ejecutadas:
 ${resultsSummary}
 
-Redacta la respuesta final para el usuario en lenguaje natural.`;
+Redacta la respuesta final para el usuario en lenguaje natural:`;
 
-        return await this.openai.chat(systemPrompt, userPrompt, { temperature: 0.6, maxTokens: 500 });
+        return await this.openai.chat(systemPrompt, userPrompt, { temperature: 0.7, maxTokens: 600 });
       } catch (error) {
         this.logger?.error?.('Nova natural response error, usando fallback:', error);
       }
     }
 
-    return this.fallbackResponse(successfulTools, failedTools);
+    return this.fallbackResponse(userMessage, successfulTools, failedTools);
   }
 
-  private fallbackResponse(successfulTools: any[], failedTools: any[]): string {
+  private fallbackResponse(userMessage: string, successfulTools: any[], failedTools: any[]): string {
     const parts: string[] = [];
+
     if (successfulTools.length > 0) {
       const labels = successfulTools
         .map((t: any) => {
@@ -171,13 +170,22 @@ Redacta la respuesta final para el usuario en lenguaje natural.`;
           return `• ${t.toolName} (${name})`;
         })
         .join('\n');
-      parts.push(`Listo, completé lo siguiente:\n${labels}`);
+      parts.push(`Listo, completé las siguientes acciones:\n${labels}`);
     }
+
     if (failedTools.length > 0) {
       const errs = failedTools.map((t: any) => `• ${t.toolName}: ${t.error}`).join('\n');
       parts.push(`No pude realizar algunas acciones:\n${errs}`);
     }
-    if (parts.length === 0) parts.push('He procesado tu solicitud. ¿Hay algo más en lo que pueda ayudarte?');
+
+    if (parts.length === 0) {
+      const msg = userMessage.toLowerCase();
+      if (msg.includes('hola') || msg.includes('buen') || msg.includes('saludos') || msg.includes('nova')) {
+        return '¡Hola! Soy Nova, tu asistente de Inteligencia Artificial en Nyvora. 🚀\n\nPuedo ayudarte a gestionar tu empresa: crear cotizaciones, facturas, clientes en el CRM, controlar tu inventario, agendar citas o instalar aplicaciones en el Marketplace.\n\n¿En qué te colaboro hoy?';
+      }
+      return `Entendido. He procesado tu mensaje: "${userMessage}". ¿Deseas que realice alguna acción específica en tu CRM, ventas, inventario, finanzas o marketplace?`;
+    }
+
     return parts.join('\n\n');
   }
 }
