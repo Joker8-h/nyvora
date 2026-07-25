@@ -10,7 +10,7 @@ import { NovaInput } from './nova-input';
 import { NovaSuggestions } from './nova-suggestions';
 import { NovaThinking } from './nova-thinking';
 import { useNova } from '../../hooks/use-nova';
-import { Plus, Trash2, MessageSquare } from 'lucide-react';
+import { Plus, Trash2, MessageSquare, Bot } from 'lucide-react';
 
 export interface NovaConversationSummary {
   conversationId: string;
@@ -23,28 +23,34 @@ interface NovaChatProps {
 }
 
 const defaultSuggestions = [
-  'Crear un cliente nuevo',
-  'Ver facturas pendientes',
-  'Reporte de ventas del mes',
-  'Crear una campaña de marketing',
+  'Crea una cotización para un cliente',
+  'Muéstrame mis productos con stock bajo',
+  '¿Cuál es el reporte de ventas del mes?',
+  'Instala WhatsApp Business en el Marketplace',
+  'Programa una reunión para mañana a las 10am',
 ];
 
-const API_URL = typeof window !== 'undefined'
-  ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1')
-  : 'http://localhost:3001/api/v1';
+function getApiUrl(): string {
+  if (typeof window !== 'undefined') {
+    return '/api/v1';
+  }
+  return process.env.API_URL || 'http://localhost:3001/api/v1';
+}
 
 export function NovaChat({ className }: NovaChatProps) {
   const { messages, isLoading, isStreaming, sendMessage, conversationId, loadConversation, clearMessages } = useNova();
   const [conversations, setConversations] = React.useState<NovaConversationSummary[]>([]);
   const [loadingConversations, setLoadingConversations] = React.useState(false);
   const [showSidebar, setShowSidebar] = React.useState(true);
+  const [autoSpeak, setAutoSpeak] = React.useState(false);
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const fetchConversations = React.useCallback(async () => {
     setLoadingConversations(true);
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-      const res = await fetch(`${API_URL}/ai/nova/conversations`, {
+      const apiUrl = getApiUrl();
+      const res = await fetch(`${apiUrl}/ai/nova/conversations`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
@@ -66,7 +72,18 @@ export function NovaChat({ className }: NovaChatProps) {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+
+    // Auto Speak out loud when a new assistant message completes
+    if (autoSpeak && messages.length > 0 && !isLoading) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg.type === 'assistant' && lastMsg.content && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(lastMsg.content);
+        utterance.lang = 'es-ES';
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+  }, [messages, isLoading, autoSpeak]);
 
   const handleSend = async (message: string) => {
     await sendMessage(message);
@@ -84,7 +101,8 @@ export function NovaChat({ className }: NovaChatProps) {
     e.stopPropagation();
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-      await fetch(`${API_URL}/ai/nova/conversations/${id}`, {
+      const apiUrl = getApiUrl();
+      await fetch(`${apiUrl}/ai/nova/conversations/${id}`, {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -96,13 +114,13 @@ export function NovaChat({ className }: NovaChatProps) {
   };
 
   return (
-    <div className={cn('flex h-full', className)}>
+    <div className={cn('flex h-full bg-background', className)}>
       {/* Conversations sidebar */}
       {showSidebar && (
-        <div className="w-64 shrink-0 border-r flex flex-col">
+        <div className="w-64 shrink-0 border-r flex flex-col bg-card/40">
           <div className="p-3 border-b">
-            <Button size="sm" className="w-full" onClick={handleNew}>
-              <Plus className="mr-1 h-4 w-4" />
+            <Button size="sm" className="w-full gap-2" onClick={handleNew}>
+              <Plus className="h-4 w-4" />
               Nueva conversación
             </Button>
           </div>
@@ -118,12 +136,12 @@ export function NovaChat({ className }: NovaChatProps) {
                     className={cn(
                       'w-full text-left rounded-md px-3 py-2 text-sm transition-colors group relative',
                       conversationId === c.conversationId
-                        ? 'bg-primary/10 text-foreground'
+                        ? 'bg-primary/10 text-foreground font-medium'
                         : 'hover:bg-muted text-muted-foreground',
                     )}
                   >
                     <div className="flex items-start gap-2">
-                      <MessageSquare className="mt-0.5 h-4 w-4 shrink-0" />
+                      <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                       <div className="flex-1 min-w-0">
                         <p className="truncate">{c.lastMessage || 'Conversación'}</p>
                         <p className="text-xs opacity-60">
@@ -151,76 +169,62 @@ export function NovaChat({ className }: NovaChatProps) {
 
       {/* Chat */}
       <div className="flex flex-col flex-1 min-w-0">
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b p-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowSidebar((s) => !s)}
-          className="md:hidden"
-        >
-          Historial
-        </Button>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-          <svg
-            className="h-6 w-6 text-primary"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold">Nova</h2>
-          <p className="text-sm text-muted-foreground">Tu asistente de IA</p>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <ScrollArea ref={scrollRef} className="flex-1 p-4">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 mb-4">
-              <svg
-                className="h-8 w-8 text-primary"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
+        {/* Header */}
+        <div className="flex items-center justify-between border-b p-4 bg-card/30">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSidebar((s) => !s)}
+              className="md:hidden"
+            >
+              Historial
+            </Button>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+              <Bot className="h-6 w-6" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Hola, soy Nova</h3>
-            <p className="text-muted-foreground max-w-md mb-6">
-              Tu asistente inteligente. Puedo ayudarte a gestionar clientes, crear facturas,
-              generar reportes y mucho más.
-            </p>
-            <NovaSuggestions
-              suggestions={defaultSuggestions}
-              onSelect={handleSend}
-            />
+            <div>
+              <h2 className="text-lg font-bold">Nova AI Assistant</h2>
+              <p className="text-xs text-muted-foreground">Co-Piloto Inteligente de Negocios (Voz & Texto)</p>
+            </div>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <NovaMessage key={message.id} message={message} />
-            ))}
-            {isLoading && <NovaThinking />}
-          </div>
-        )}
-      </ScrollArea>
+        </div>
 
-      {/* Input */}
-      <div className="border-t p-4">
-        <NovaInput onSend={handleSend} disabled={isLoading} />
-      </div>
+        {/* Messages */}
+        <ScrollArea ref={scrollRef} className="flex-1 p-4">
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center py-8">
+              <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 mb-4 text-primary">
+                <Bot className="h-10 w-10" />
+              </div>
+              <h3 className="text-2xl font-extrabold mb-2">¡Hola! Soy Nova AI</h3>
+              <p className="text-muted-foreground max-w-md mb-6 text-sm">
+                Tu asistente operativo inteligente. Puedes hablarme por voz usando el micrófono o escribirme para gestionar cualquier módulo de tu empresa.
+              </p>
+              <NovaSuggestions
+                suggestions={defaultSuggestions}
+                onSelect={handleSend}
+              />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <NovaMessage key={message.id} message={message} />
+              ))}
+              {isLoading && <NovaThinking />}
+            </div>
+          )}
+        </ScrollArea>
+
+        {/* Input */}
+        <div className="border-t p-4 bg-card/30">
+          <NovaInput
+            onSend={handleSend}
+            disabled={isLoading}
+            autoSpeak={autoSpeak}
+            onToggleAutoSpeak={(val) => setAutoSpeak(val)}
+          />
+        </div>
       </div>
     </div>
   );
