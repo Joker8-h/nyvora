@@ -126,7 +126,7 @@ export class NovaOrchestratorService {
 
     if (this.openai.isConfigured) {
       try {
-        const systemPrompt = `Eres Nova, el asistente conversacional de Nexora (un Business Operating System AI-First).
+        const systemPrompt = `Eres Nova, el asistente conversacional de Nyvora (un Business Operating System AI-First).
 Tu objetivo es responder al usuario de forma NATURAL, cercana y en lenguaje cotidiano, como lo haría un asistente humano competente.
 
 REGLAS ESTRICTAS:
